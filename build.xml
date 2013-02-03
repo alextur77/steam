@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-	<target name="build" depends="prepare,phpunit"/>	
-	<target name="prepare">
-		<mkdir dir="logs" />
-		<mkdir dir="html/phpunit" />
-	</target>
+<project name="Application" default="build" basedir=".">
 
+	<target name="build" depends="prepare,phpunit"/>
+	
+	<property name="applicationDir" value="${basedir}" />
+	<property name="buildDir" value="${basedir}/build" />
+	
+	<target name="prepare">
+	    <mkdir dir="${buildDir}/logs" />
+	    <mkdir dir="${buildDir}/html/phpunit" />
+	</target>
+	
 	<target name="phpunit" description="PHPUnit">
-		<property name="phpunitLogs" value="logs" />
-		<property name="junit" value="${phpunitLogs}/phpunit.xml" />
-		<exec executable="cmd" failonerror="false" osfamily="windows" output="logs\phpunit.txt"> 
-			<arg line="/c phpunit.bat" />
-			<arg line="--configuration app\phpunit.xml" />
-		</exec>
-		<echo message="##teamcity[importData type='junit' path='${junit}']" />
-		<zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
-		<delete dir="${phpunitLogs}/coverage"/>
-		<echo message="##teamcity[publishArtifacts '${phpunitLogs}']" />
-	</target>		
+	    <property name="phpunitLogs" value="${applicationDir}/logs" />
+	    <property name="junit" value="${phpunitLogs}/phpunit.xml" />	   
+	    <exec dir="${applicationDir}" executable="cmd" failonerror="false" osfamily="windows" output="${buildDir}\logs\phpunit.txt"> 
+	        <arg line="/c phpunit.bat" />
+	        <arg line="--configuration ${applicationDir}\app\phpunit.xml" />
+	    </exec>
+	    <echo message="##teamcity[importData type='junit' path='${junit}']" />
+	    <zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
+	    <delete dir="${phpunitLogs}/coverage"/>
+	    <echo message="##teamcity[publishArtifacts '${phpunitLogs}']" />
+	</target>       
 </project>
+
+
+      
