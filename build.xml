@@ -12,13 +12,17 @@
 	</target>
 	
 	<target name="phpunit" description="PHPUnit">
-	    <property name="phpunitLogs" value="${applicationDir}/logs" />
+	    <property name="phpunitLogs" value="${buildDir}/logs" />
 	    <property name="junit" value="${phpunitLogs}/phpunit.xml" />	   
 	    <exec dir="${applicationDir}" executable="cmd" failonerror="false" osfamily="windows" output="${buildDir}\logs\phpunit.txt"> 
 	        <arg line="/c phpunit.bat" />
 	        <arg line="--configuration &quot;${applicationDir}\app\phpunit.xml&quot;" />
+		<arg line="--coverage-html &quot;${phpunitLogs}/coverage&quot;" />
+		<arg line="--log-junit &quot;${junit}&quot;" />
 	    </exec>
 	    <echo message="##teamcity[importData type='junit' path='${junit}']" />
+	    <zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
+	    <delete dir="${phpunitLogs}/coverage"/>
 	    <echo message="##teamcity[publishArtifacts '${phpunitLogs}']" />
 	</target>       
 </project>
