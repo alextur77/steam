@@ -1,28 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Application" default="build" basedir="../">
-
-	<target name="build" depends="prepare,phpunit"/>
-
-	<property name="applicationDir" value="${basedir}/source" />
-	<property name="buildDir" value="${basedir}/build" />
-	
+	<target name="build" depends="prepare,phpunit"/>	
 	<target name="prepare">
-		<mkdir dir="${buildDir}/logs" />
-		<mkdir dir="${buildDir}/html/phpdoc" />
-		<mkdir dir="${buildDir}/html/phpcb" />
-		<mkdir dir="${buildDir}/html/phpcov" />
-		<mkdir dir="${buildDir}/html/phpunit" />
+		<mkdir dir="logs" />
+		<mkdir dir="html/phpunit" />
 	</target>
 
 	<target name="phpunit" description="PHPUnit">
-		<property name="phpunitLogs" value="${applicationDir}/tests/logs" />
+		<property name="phpunitLogs" value="logs" />
 		<property name="junit" value="${phpunitLogs}/phpunit.xml" />
-        <exec dir="${basedir}" executable="phpunit" failonerror="false" osfamily="unix" output="${buildDir}/logs/phpunit.txt">
-            <arg line="--configuration ${applicationDir}/app/phpunit.xml"/>
-        </exec>		
-		<exec dir="${applicationDir}\tests" executable="cmd" failonerror="false" osfamily="windows" output="${buildDir}\logs\phpunit.txt"> 
+		<exec executable="cmd" failonerror="false" osfamily="windows" output="logs\phpunit.txt"> 
 			<arg line="/c phpunit.bat" />
-			<arg line="--configuration ${applicationDir}\app\phpunit.xml" />
+			<arg line="--configuration app\phpunit.xml" />
 		</exec>
 		<echo message="##teamcity[importData type='junit' path='${junit}']" />
 		<zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
