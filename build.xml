@@ -16,7 +16,7 @@
 	    <property name="junit" value="${phpunitLogs}/phpunit.xml" />	   
 	    <exec dir="${applicationDir}" executable="cmd" failonerror="false" osfamily="windows" output="${buildDir}\logs\phpunit.txt"> 
 	        <arg line="/c phpunit.bat" />
-	        <arg line="--configuration ${applicationDir}\app\phpunit.xml" />
+	        <arg line="--configuration &quot;${applicationDir}\app\phpunit.xml&quot;" />
 	    </exec>
 	    <echo message="##teamcity[importData type='junit' path='${junit}']" />
 	    <echo message="##teamcity[publishArtifacts '${phpunitLogs}']" />
