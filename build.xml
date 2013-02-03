@@ -19,8 +19,6 @@
 	        <arg line="--configuration ${applicationDir}\app\phpunit.xml" />
 	    </exec>
 	    <echo message="##teamcity[importData type='junit' path='${junit}']" />
-	    <zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
-	    <delete dir="${phpunitLogs}/coverage"/>
 	    <echo message="##teamcity[publishArtifacts '${phpunitLogs}']" />
 	</target>       
 </project>
