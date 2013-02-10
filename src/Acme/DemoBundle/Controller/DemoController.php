@@ -4,6 +4,7 @@ namespace Acme\DemoBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Acme\DemoBundle\Form\ContactType;
 
 // these import the "@Route" and "@Template" annotations
@@ -12,6 +13,16 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 
 class DemoController extends Controller
 {
+/**
+*
+*@Route("/hello/{name}.html", name="_demotest")
+*/
+public function testAction($name) {
+$kernel = $this->get('kernel');
+  $path = $kernel->locateResource('@AcmeDemoBundle/Resources/views/Demo/'.$name.'.html');
+
+   return new Response(file_get_contents($path));
+}
     /**
      * @Route("/", name="_demo")
      * @Template()
