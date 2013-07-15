@@ -3,8 +3,8 @@
 
 	<target name="build" depends="prepare, rsync_remotehost"/>
 
-	<property name="applicationDir" value="${basedir}/source" />
-	<property name="buildDir" value="${basedir}/build" />
+	<property name="applicationDir" value="${basedir}" />
+	<property name="buildDir" value="${basedir}/../build" />
 
     <property name="rsync.user" value="root" />
     <property name="rsync.server" value="192.168.10.114" />
