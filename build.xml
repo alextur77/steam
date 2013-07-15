@@ -3,8 +3,12 @@
 
 	<target name="build" depends="prepare"/>
 
-	<property name="applicationDir" value="${basedir}" />
-	<property name="buildDir" value="${basedir}/../build" />
+	<property name="applicationDir" value="${basedir}/source" />
+	<property name="buildDir" value="${basedir}/build" />
+
+    <property name="rsync.user" value="root" />
+    <property name="rsync.server" value="192.168.10.114" />
+    <property name="rsync.dir" value="/srv/www/steam" />
 
 	<target name="prepare">
 	    <mkdir dir="${buildDir}/logs" />
@@ -14,6 +18,12 @@
 	    <mkdir dir="${buildDir}/html/phpunit" />
 	</target>
 
+    <target name="rsync_remotehost" >
+        <exec executable="rsync" dir="${applicationDir}">
+            <arg line="-aOvz --chmod=g+w,Da+rX,Fa+r,F-X --exclude .svn . \
+            ${rsync.user}@${rsync.server}:${rsync.dir}" />
+        </exec>
+    </target>
 </project>
 
 
