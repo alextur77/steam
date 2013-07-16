@@ -70,10 +70,13 @@
     <property name="remote.owner" value="admin" />
     <property name="remote.group" value="www" />
 
+    <target name="symfony_pre">
+        <copy file="${applicationDir}/app/web/.htaccess.prod" tofile="${applicationDir}/app/web/.htaccess" failonerror="false"/>
+    </target>
 
     <target name="rsync" depends="backup_files, backup_db">
         <exec executable="rsync" dir="${applicationDir}">
-            <arg line="-avz --chmod=g+w,Da+rX,Fa+r,F-X --exclude 'build' --exclude 'web/files' --exclude 'app/config/parameters.yml' ./ ${remote.user}@${remote.server}:${remote.dir}" />
+            <arg line="-avz --chmod=g+w,Da+rX,Fa+r,F-X --excule '.*' --exclude 'build' --exclude 'web/files' --exclude 'app/config/parameters.yml' ./ ${remote.user}@${remote.server}:${remote.dir}" />
         </exec>
     </target>
     <target name="backup_files">
