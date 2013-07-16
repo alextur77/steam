@@ -5,17 +5,20 @@
         <format property="current.date" pattern="yyyyMMdd" />
     </tstamp>
 
+	<property name="project" value="steam" />
 	<property name="applicationDir" value="${basedir}" />
 	<property name="buildDir" value="${basedir}/build" />
 
 
 
-    <target name="build" depends="prepare, symfony"/>
+    <target name="build" depends="prepare, rsync"/>
 
 	<target name="prepare">
         <delete dir="${buildDir}/logs" />
         <delete dir="${buildDir}/html" />
 	    <mkdir dir="${buildDir}/logs" />
+	    <mkdir dir="${buildDir}/logs/symfony_logs" />
+	    <mkdir dir="${buildDir}/logs/phpunit_logs" />
 	    <mkdir dir="${buildDir}/html/phpdoc" />
 		<mkdir dir="${buildDir}/html/phpcb" />
 		<mkdir dir="${buildDir}/html/phpcov" />
@@ -29,26 +32,29 @@
     </target>
 
     <target name="symfony">
-        <exec executable="php" dir="${applicationDir}">
+        <property name="symfonyLogs" value="${buildDir}/logs/symfony_logs" />
+        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/assets_instal.txt">
             <arg line="app/console" />
             <arg line="assets:install --symlink" />
         </exec>
-        <exec executable="php" dir="${applicationDir}">
+        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/assetic_dump.txt">
             <arg line="app/console" />
             <arg line="assetic:dump --env=prod" />
         </exec>
+        <echo message="##teamcity[publishArtifacts '${symfonyLogs}/assets_instal.txt']" />
+        <echo message="##teamcity[publishArtifacts '${symfonyLogs}/assetic_dump.txt']" />
     </target>
 
     <target name="phpunit" description="PHPUnit">
-        <property name="phpunitLogs" value="${buildDir}/logs" />
+        <property name="phpunitLogs" value="${buildDir}/logs/phpunit_logs" />
         <property name="junit" value="${phpunitLogs}/phpunit.xml" />
         <copy file="${applicationDir}/app/config/parameters.build.yml" tofile="${applicationDir}/app/config/parameters.yml" />
-        <exec dir="${applicationDir}" executable="phpunit" output="${buildDir}/logs/phpunit.txt">
+        <exec dir="${applicationDir}" executable="phpunit" output="${phpunitLogs}/phpunit.txt">
             <arg line="--configuration &quot;${applicationDir}/app/phpunit.xml&quot;" />
             <arg line="--coverage-html &quot;${phpunitLogs}/coverage&quot;" />
             <arg line="--log-junit &quot;${junit}&quot;" />
         </exec>
-        <echo message="##teamcity[publishArtifacts '${buildDir}/logs/phpunit.txt']" />
+        <echo message="##teamcity[publishArtifacts '${phpunitLogs}/phpunit.txt']" />
         <echo message="##teamcity[importData type='junit' path='${junit}']" />
         <zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
         <delete dir="${phpunitLogs}/coverage"/>
@@ -58,14 +64,21 @@
     <!--Copy to remote server-->
     <property name="remote.user" value="root" />
     <property name="remote.server" value="192.168.10.114" />
-    <property name="remote.dir" value="/srv/www/steam" />
+    <property name="remote.dir" value="/srv/www/steam.10017" />
     <property name="remote.db_name" value="symfony" />
     <property name="remote.db_user" value="root" />
+    <property name="remote.owner" value="admin" />
+    <property name="remote.group" value="www" />
+
 
     <target name="rsync" depends="backup_files, backup_db">
         <exec executable="rsync" dir="${applicationDir}">
             <arg line="-avz --chmod=g+w,Da+rX,Fa+r,F-X --exclude 'build' --exclude 'web/files' --exclude 'app/config/parameters.yml' ./ ${remote.user}@${remote.server}:${remote.dir}" />
         </exec>
+        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="php ${remote.dir}/app/console cache:clear --env=prod" />
+        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="chown -R ${remote.owner}:${remote.group} ${remote.dir}/app/cache" />
+        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="chown -R ${remote.owner}:${remote.group} ${remote.dir}/app/logs" />
+        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="chown -R ${remote.owner}:${remote.group} ${remote.dir}/web" />
     </target>
     <target name="backup_files">
         <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="zip -r ${remote.dir}/../../backup_files_${current.date}.zip ${remote.dir}" />
