@@ -1,5 +1,0 @@
-_assetic:
-    resource: .
-    type: assetic
-_app:
-    resource: 'C:/WebWork/OpenServer/domains/steam/app/config/routing_dev.yml'
