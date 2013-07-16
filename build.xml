@@ -11,7 +11,7 @@
 
 
 
-    <target name="build" depends="prepare, symfony_pre, rsync, symfony_post"/>
+    <target name="build" depends="prepare, symfony_build"/>
 
 	<target name="prepare">
         <delete dir="${buildDir}/logs" />
@@ -32,7 +32,7 @@
     </target>
 
     <!--Symfony-->
-    <target name="symfony">
+    <target name="symfony_build">
         <property name="symfonyLogs" value="${buildDir}/logs/symfony_logs" />
         <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/symfony.txt">
             <arg line="app/console" />
@@ -90,8 +90,8 @@
             <arg line="--exclude 'build'--exclude 'web/files' --exclude 'app/config/parameters.yml' --exclude 'app/logs/*' ./ ${remote.user}@${remote.server}:${remote.dir}" />
             <arg line="--exclude 'web/files' --exclude 'app/config/parameters.yml' --exclude 'app/logs/*' ./ ${remote.user}@${remote.server}:${remote.dir}" />
             <arg line="--exclude 'app/config/parameters.yml' --exclude 'app/logs/*' ./ ${remote.user}@${remote.server}:${remote.dir}" />
-            <arg line="--exclude 'app/logs/*' ./ ${remote.user}@${remote.server}:${remote.dir}" />
-            <arg line="--exclude 'app/cache/*' ./ ${remote.user}@${remote.server}:${remote.dir}" />
+            <arg line="--exclude 'app/logs' ./ ${remote.user}@${remote.server}:${remote.dir}" />
+            <arg line="--exclude 'app/cache' ./ ${remote.user}@${remote.server}:${remote.dir}" />
             <arg line="./ ${remote.user}@${remote.server}:${remote.dir}" />
         </exec>
     </target>
