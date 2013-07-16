@@ -34,6 +34,7 @@
             <arg line="--coverage-html &quot;${phpunitLogs}/coverage&quot;" />
             <arg line="--log-junit &quot;${junit}&quot;" />
         </exec>
+        <echo message="##teamcity[publishArtifacts '${buildDir}/logs/phpunit.txt']" />
         <echo message="##teamcity[importData type='junit' path='${junit}']" />
         <zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
         <delete dir="${phpunitLogs}/coverage"/>
