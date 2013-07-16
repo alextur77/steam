@@ -80,13 +80,13 @@
         </exec>
     </target>
     <target name="backup_files">
-        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="zip -r ${remote.dir}/../../backup_${project}_files_${current.date}.zip ${remote.dir}" />
+        <!--<sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="zip -r ${remote.dir}/../../backup_${project}_files_${current.date}.zip ${remote.dir}" />-->
     </target>
     <target name="backup_db" depends="dump">
-        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="zip -r ${remote.dir}/../../backup_${project}_db_${current.date}.zip ${remote.dir}/../../${project}.sql" />
+        <!--<sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="zip -r ${remote.dir}/../../backup_${project}_db_${current.date}.zip ${remote.dir}/../../${project}.sql" />-->
     </target>
     <target name="dump">
-        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="mysqldump -u ${remote.db_user} ${remote.db_name} > ${remote.dir}/../../${project}.sql" />
+        <!--<sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="mysqldump -u ${remote.db_user} ${remote.db_name} > ${remote.dir}/../../${project}.sql" />-->
     </target>
 
     <target name="symfony_post">
