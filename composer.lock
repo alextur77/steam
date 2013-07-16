@@ -532,16 +532,16 @@
         },
         {
             "name": "kriswallsmith/assetic",
-            "version": "dev-master",
+            "version": "1.1.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kriswallsmith/assetic.git",
-                "reference": "f9f754dc7524acd6daf0bf510d22c055b4967e08"
+                "reference": "41930af87d8182c3298cf66f49a1606fa3c1d367"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kriswallsmith/assetic/zipball/f9f754dc7524acd6daf0bf510d22c055b4967e08",
-                "reference": "f9f754dc7524acd6daf0bf510d22c055b4967e08",
+                "url": "https://api.github.com/repos/kriswallsmith/assetic/zipball/41930af87d8182c3298cf66f49a1606fa3c1d367",
+                "reference": "41930af87d8182c3298cf66f49a1606fa3c1d367",
                 "shasum": ""
             },
             "require": {
@@ -570,7 +570,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.2-dev"
+                    "dev-master": "1.1-dev"
                 }
             },
             "autoload": {
@@ -599,7 +599,7 @@
                 "compression",
                 "minification"
             ],
-            "time": "2013-07-11 15:56:23"
+            "time": "2013-07-11 15:46:25"
         },
         {
             "name": "monolog/monolog",
