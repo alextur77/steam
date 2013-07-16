@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Application" default="build" basedir=".">
 
-	<target name="build" depends="prepare, rsync_remotehost"/>
+    <tstamp>
+        <format property="current.date" pattern="yyyyMMdd" />
+    </tstamp>
 
 	<property name="applicationDir" value="${basedir}" />
-	<property name="buildDir" value="${basedir}/../build" />
+	<property name="buildDir" value="${basedir}/build" />
 
-    <property name="rsync.user" value="root" />
-    <property name="rsync.server" value="192.168.10.114" />
-    <property name="rsync.dir" value="/srv/www/steam" />
+
+
+    <target name="build" depends="prepare, phpunit"/>
 
 	<target name="prepare">
 	    <mkdir dir="${buildDir}/logs" />
@@ -18,10 +20,45 @@
 	    <mkdir dir="${buildDir}/html/phpunit" />
 	</target>
 
-    <target name="rsync_remotehost" >
-        <exec executable="rsync" dir="${applicationDir}">
-            <arg line="-aOvz --chmod=g+w,Da+rX,Fa+r,F-X --exclude .svn . \
-            ${rsync.user}@${rsync.server}:${rsync.dir}" />
+    <target name="composer">
+        <exec executable="composer" dir="${applicationDir}">
+            <arg line="install" />
         </exec>
+    </target>
+
+    <target name="phpunit" description="PHPUnit">
+        <property name="phpunitLogs" value="${buildDir}/logs" />
+        <property name="junit" value="${phpunitLogs}/phpunit.xml" />
+        <exec dir="${applicationDir}" executable="phpunit" output="${buildDir}/logs/phpunit.txt">
+            <arg line="--configuration &quot;${applicationDir}/app/phpunit.xml&quot;" />
+            <arg line="--coverage-html &quot;${phpunitLogs}/coverage&quot;" />
+            <arg line="--log-junit &quot;${junit}&quot;" />
+        </exec>
+        <echo message="##teamcity[importData type='junit' path='${junit}']" />
+        <zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
+        <delete dir="${phpunitLogs}/coverage"/>
+        <echo message="##teamcity[publishArtifacts '${phpunitLogs}']" />
+    </target>
+
+    <!--Copy to remote server-->
+    <property name="remote.user" value="root" />
+    <property name="remote.server" value="192.168.10.114" />
+    <property name="remote.dir" value="/srv/www/steam" />
+    <property name="remote.db_name" value="symfony" />
+    <property name="remote.db_user" value="root" />
+
+    <target name="rsync_remotehost" depends="backup_files, backup_db">
+        <exec executable="rsync" dir="${applicationDir}">
+            <arg line="-avz --chmod=g+w,Da+rX,Fa+r,F-X --exclude 'build' --exclude 'web/files' --exclude 'app/config/parameters.yml' ./ ${remote.user}@${remote.server}:${remote.dir}" />
+        </exec>
+    </target>
+    <target name="backup_files">
+        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="zip -r ${remote.dir}/../../backup_files_${current.date}.zip ${remote.dir}" />
+    </target>
+    <target name="backup_db" depends="dump">
+        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="zip -r ${remote.dir}/../../backup_db_${current.date}.zip ${remote.dir}/../../${project}.sql" />
+    </target>
+    <target name="dump">
+        <sshexec trust="true" keyfile="${user.home}/.ssh/id_rsa" host="${remote.server}" username="root" command="mysqldump -u ${remote.db_user} ${remote.db_name} > ${remote.dir}/../../${project}.sql" />
     </target>
 </project>
