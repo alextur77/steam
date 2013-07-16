@@ -10,9 +10,11 @@
 
 
 
-    <target name="build" depends="prepare, phpunit"/>
+    <target name="build" depends="prepare, symfony"/>
 
 	<target name="prepare">
+        <delete dir="${buildDir}/logs" />
+        <delete dir="${buildDir}/html" />
 	    <mkdir dir="${buildDir}/logs" />
 	    <mkdir dir="${buildDir}/html/phpdoc" />
 		<mkdir dir="${buildDir}/html/phpcb" />
@@ -26,9 +28,21 @@
         </exec>
     </target>
 
+    <target name="symfony">
+        <exec executable="php" dir="${applicationDir}">
+            <arg line="app/console" />
+            <arg line="assets:install --symlink" />
+        </exec>
+        <exec executable="php" dir="${applicationDir}">
+            <arg line="app/console" />
+            <arg line="assetic:dump --env=prod" />
+        </exec>
+    </target>
+
     <target name="phpunit" description="PHPUnit">
         <property name="phpunitLogs" value="${buildDir}/logs" />
         <property name="junit" value="${phpunitLogs}/phpunit.xml" />
+        <copy file="${applicationDir}/app/config/parameters.build.yml" tofile="${applicationDir}/app/config/parameters.yml" />
         <exec dir="${applicationDir}" executable="phpunit" output="${buildDir}/logs/phpunit.txt">
             <arg line="--configuration &quot;${applicationDir}/app/phpunit.xml&quot;" />
             <arg line="--coverage-html &quot;${phpunitLogs}/coverage&quot;" />
@@ -48,7 +62,7 @@
     <property name="remote.db_name" value="symfony" />
     <property name="remote.db_user" value="root" />
 
-    <target name="rsync_remotehost" depends="backup_files, backup_db">
+    <target name="rsync" depends="backup_files, backup_db">
         <exec executable="rsync" dir="${applicationDir}">
             <arg line="-avz --chmod=g+w,Da+rX,Fa+r,F-X --exclude 'build' --exclude 'web/files' --exclude 'app/config/parameters.yml' ./ ${remote.user}@${remote.server}:${remote.dir}" />
         </exec>
