@@ -11,7 +11,7 @@
 
 
 
-    <target name="build" depends="prepare, rsync, symfony_post"/>
+    <target name="build" depends="prepare, symfony_pre, rsync, symfony_post"/>
 
 	<target name="prepare">
         <delete dir="${buildDir}/logs" />
@@ -31,6 +31,7 @@
         </exec>
     </target>
 
+    <!--Symfony-->
     <target name="symfony">
         <property name="symfonyLogs" value="${buildDir}/logs/symfony_logs" />
         <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/assets_instal.txt">
@@ -45,6 +46,7 @@
         <echo message="##teamcity[publishArtifacts '${symfonyLogs}/assetic_dump.txt']" />
     </target>
 
+    <!--PHPUnit-->
     <target name="phpunit" description="PHPUnit">
         <property name="phpunitLogs" value="${buildDir}/logs/phpunit_logs" />
         <property name="junit" value="${phpunitLogs}/phpunit.xml" />
