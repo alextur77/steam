@@ -2,7 +2,7 @@
 <project name="Application" default="build" basedir=".">
 
     <tstamp>
-        <format property="current.date" pattern="yyyyMMdd" />
+        <format property="current.date" pattern="yyyyMMdd_hhmm" />
     </tstamp>
 
 	<property name="project" value="steam" />
@@ -11,7 +11,7 @@
 
 
 
-    <target name="build" depends="prepare, symfony_build"/>
+    <target name="build" depends="prepare, phpmd, phpcpd, phpcs, phpdoc, phpcb, phpdcd"/>
 
 	<target name="prepare">
         <delete dir="${buildDir}/logs" />
@@ -34,24 +34,25 @@
     <!--Symfony-->
     <target name="symfony_build">
         <property name="symfonyLogs" value="${buildDir}/logs/symfony_logs" />
-        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/symfony.txt">
+        <exec executable="php" dir="${applicationDir}">
             <arg line="app/console" />
             <arg line="cache:clear --env=prod" />
         </exec>
-        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/symfony.txt">
+        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/assetic_install.txt">
             <arg line="app/console" />
             <arg line="assets:install --symlink" />
         </exec>
-        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/symfony.txt">
+        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/assetic_dump.txt">
             <arg line="app/console" />
             <arg line="assetic:dump --env=prod" />
         </exec>
-        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/symfony.txt">
+        <exec executable="php" dir="${applicationDir}" output="${symfonyLogs}/schema_update.txt">
             <arg line="app/console" />
             <arg line="doctrine:schema:update --force" />
         </exec>
-        <echo message="##teamcity[publishArtifacts '${symfonyLogs}/symfony.txt']" />
-        <!--<echo message="##teamcity[publishArtifacts '${symfonyLogs}/assetic_dump.txt']" />-->
+        <echo message="##teamcity[publishArtifacts '${symfonyLogs}/assetic_install.txt']" />
+        <echo message="##teamcity[publishArtifacts '${symfonyLogs}/assetic_dump.txt']" />
+        <echo message="##teamcity[publishArtifacts '${symfonyLogs}/schema_update.txt']" />
     </target>
 
     <!--PHPUnit-->
@@ -69,6 +70,77 @@
         <zip destfile="${phpunitLogs}/coverage.zip" basedir="${phpunitLogs}/coverage"/>
         <delete dir="${phpunitLogs}/coverage"/>
         <echo message="##teamcity[publishArtifacts '${phpunitLogs}']" />
+    </target>
+
+    <!--PHP Mess Detector-->
+    <target name="phpmd" description="PHP Mess Detector">
+        <property name="pmd" value="${buildDir}/logs/phpmd.xml" />
+        <exec executable="phpmd" failonerror="false" output="${buildDir}/logs/logs_phpmd.txt">
+            <arg line="${applicationDir}/src" />
+            <arg line="xml" />
+            <arg line="naming,unusedcode,codesize" />
+            <arg line="--reportfile '${pmd}'" />
+        </exec>
+        <echo message="##teamcity[importData type='pmd' path='${pmd}']"/>
+        <echo message="##teamcity[publishArtifacts '${buildDir}/logs/logs_phpmd.txt']" />
+    </target>
+
+    <!--Copy/Paste Detector-->
+    <target name="phpcpd" description="Copy/Paste Detector">
+        <property name="phpcpd" value="${buildDir}/logs/phpcpd.xml" />
+        <exec dir="${applicationDir}" executable="phpcpd" failonerror="false" output="${buildDir}/logs/logs_phpcpd.txt">
+            <arg line="--log-pmd ${phpcpd}" />
+            <arg line="src" />
+        </exec>
+        <echo message="##teamcity[importData type='pmd' path='${phpcpd}']"/>
+        <echo message="##teamcity[publishArtifacts '${buildDir}/logs/logs_phpcpd.txt']" />
+        <echo message="##teamcity[publishArtifacts '${phpcpd}']" />
+    </target>
+
+    <!--PHP_CodeSniffer-->
+    <target name="phpcs" description="PHP_CodeSniffer">
+        <exec dir="${applicationDir}" executable="phpcs" failonerror="false" output="${buildDir}/logs/logs_phpcs.txt">
+            <arg line="--tab-width=4" />
+            <arg line="--standard=Symfony2" />
+            <arg line="--report-file=${buildDir}/logs/phpcs.xml" />
+            <arg line="${applicationDir}/src" />
+        </exec>
+        <echo message="##teamcity[publishArtifacts '${buildDir}/logs/phpcs.xml']" />
+        <echo message="##teamcity[publishArtifacts '${buildDir}/logs/logs_phpcs.txt']" />
+    </target>
+
+    <!--PhpDocumentor-->
+    <target name="phpdoc" description="PhpDocumentor">
+        <exec dir="${applicationDir}" executable="phpdoc" failonerror="false" output="${buildDir}/logs/logs_phpdoc.txt">
+            <arg line="--directory ${applicationDir}/src" />
+            <arg line="--target ${buildDir}/html/phpdoc" />
+            <arg line="--title ${project}" />
+        </exec>
+        <zip destfile="${buildDir}/phpdoc.zip" basedir="${buildDir}/html/phpdoc" />
+        <echo message="##teamcity[publishArtifacts '${buildDir}/phpdoc.zip']" />
+        <echo message="##teamcity[publishArtifacts '${buildDir}/logs/logs_phpdoc.txt']" />
+        <delete dir="${buildDir}/html/phpdoc"/>
+    </target>
+
+    <!--PHP_CodeBrowser-->
+    <target name="phpcb" description="PHP_CodeBrowser">
+        <exec dir="${applicationDir}" executable="phpcb" failonerror="false">
+            <arg line="--log ${buildDir}/logs" />
+            <arg line="--source ${applicationDir}/src" />
+            <arg line="--output ${buildDir}/html/phpcb" />
+        </exec>
+        <zip destfile="${buildDir}/html/phpcb.zip" basedir="${buildDir}/html/phpcb" />
+        <echo message="##teamcity[publishArtifacts '${buildDir}/html/phpcb.zip']" />
+        <delete dir="${buildDir}/html/phpcb"/>
+    </target>
+
+    <!--PHP Dead Code Detector-->
+    <target name="phpdcd" description="PHP Dead Code Detector">
+        <exec dir="${applicationDir}" executable="phpdcd" failonerror="false" output="${buildDir}/logs/logs_phpdcd.txt">
+            <arg line="--recursive" />
+            <arg line="${applicationDir}/src" />
+        </exec>
+        <echo message="##teamcity[publishArtifacts '${buildDir}/logs/logs_phpdcd.txt']" />
     </target>
 
     <!--Copy to remote server-->
